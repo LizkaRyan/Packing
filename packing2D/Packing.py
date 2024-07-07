@@ -25,16 +25,49 @@ class Fenetre:
         btnBF.place(x=self.cadre.point.x+2*(width // 5), y=self.cadre.point.y+self.cadre.height+10, anchor="n")
 
     def bf(self):
-        print("Mbola tsy vita")
+        self.deleteCanvas()
+        free_rectangles=self.best_fit()
+        # print(len(free_rectangles))
+        self.put_free_space(free_rectangles)
+    
+    def best_fit(self):
+        free_rectangles=[Rectangle(self.cadre.width,self.cadre.height)]
+        self.rectangles.sort(key=lambda rectangle: rectangle.height,reverse=True)
+        num=1
+        for rectangle in self.rectangles:
+            index_rectangle_fit=-1
+            min_space_left=float('inf')
+            
+            for i,free_rectangle in enumerate(free_rectangles):
+                rectangle.set_point(free_rectangle.point)
+                if free_rectangle.contains(rectangle):
+                    space_left=free_rectangle.supeficie()-rectangle.supeficie()
+                    if space_left<min_space_left:
+                        index_rectangle_fit=i
+                        min_space_left=space_left
+            
+            if index_rectangle_fit!=-1:
+                rectangle.set_point(free_rectangles[index_rectangle_fit].point)
+                new_free_rectangle=Rectangle(free_rectangles[index_rectangle_fit].width-rectangle.width,rectangle.height)
+                new_free_rectangle.set_point(Point(rectangle.point.x+rectangle.width,rectangle.point.y))
+                if rectangle.point.x+rectangle.width<self.cadre.width:
+                    free_rectangles.append(new_free_rectangle)
+                self.putRectangle(rectangle,num)
+                free_rectangles[index_rectangle_fit].set_point(Point(rectangle.point.x,rectangle.point.y+rectangle.height))
+                free_rectangles[index_rectangle_fit].height=free_rectangles[index_rectangle_fit].height-rectangle.height
+            
+            num+=1
+        
+        return free_rectangles
 
     def launch(self):
-        #self.ffdh()
+        self.bf()
         self.fenetre.mainloop()
 
     def deleteCanvas(self):
         self.canvas.delete('all')
         position_x,position_y=self.cadre.point.x,self.cadre.point.y
-        self.canvas.create_rectangle(position_x, position_y, self.cadre.width+position_x, self.cadre.height+position_y,outline="red")
+        self.canvas.create_rectangle(position_x, position_y, self.cadre.width+position_x, self.cadre.height+position_y,width=5,outline="red")
 
 
     def on_canvas_click(self,event):
@@ -98,3 +131,10 @@ class Fenetre:
         center_x = position_x + rectangle.width / 2
         center_y = position_y + rectangle.height / 2
         self.canvas.create_text(center_x, center_y, text=str(numero), fill="white", font=("Arial", 12))
+
+    def put_free_space(self,free_rectangles:List[Rectangle]):
+        for rectangle in free_rectangles:
+            position_x,position_y=self.cadre.point.x+rectangle.point.x,self.cadre.point.y+rectangle.point.y
+            self.canvas.create_rectangle(position_x,position_y,position_x+rectangle.width,position_y+rectangle.height,outline="yellow")
+            center_x = position_x + rectangle.width / 2
+            center_y = position_y + rectangle.height / 2

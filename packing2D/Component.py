@@ -1,3 +1,4 @@
+from typing import List
 class Point:
     def __init__(self,x,y):
         self.x=x
@@ -72,6 +73,21 @@ class Rectangle:
             return False
         return True
     
+    def contains_only(self,rectangle):
+        if not self.point.x<rectangle.point.x+rectangle.width:
+            return False
+        
+        if not rectangle.point.x<self.point.x+self.width:
+            return False
+        
+        if not self.point.y<rectangle.point.y+rectangle.height:
+            return False
+        
+        if not rectangle.point.y<self.point.y+self.height:
+            return False
+        
+        return True
+    
     def supeficie(self):
         return self.height*self.width
 
@@ -79,4 +95,4 @@ class Cadre:
     def __init__(self,point:Point,width,height):
         self.point=point
         self.width=width
-        self.height=height   
+        self.height=height
